@@ -101,7 +101,7 @@ AegisAgent adds three layers on top of Hermes Agent:
 | **Phase 2: Compliance** | 50+ users, full middleware, encryption client adapters | 4–8 months | ⚪ Not started |
 | **Phase 3: Productization** | Industry templates, deployment packages, customer delivery | 8–12 months | ⚪ Not started |
 
-See [`ROADMAP.md`](./ROADMAP.md) for the detailed implementation plan.
+See [`docs/ROADMAP.md`](./docs/ROADMAP.md) for the detailed implementation plan.
 
 ## 📂 Repository Structure
 
@@ -228,7 +228,7 @@ AegisAgent 在 Hermes Agent 之上叠加三层能力:
 | **Phase 2: 合规** | 50+ 用户、完整中间层、加密客户端适配 | 4–8 月 | ⚪ 未开始 |
 | **Phase 3: 产品化** | 行业模板、部署包、对客交付 | 8–12 月 | ⚪ 未开始 |
 
-详细实施计划见 [`ROADMAP.md`](./ROADMAP.md)。
+详细实施计划见 [`docs/ROADMAP.md`](./docs/ROADMAP.md)。
 
 ## 📂 仓库结构
 
