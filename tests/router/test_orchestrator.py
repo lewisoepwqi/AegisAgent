@@ -22,7 +22,7 @@ class _FakeProc:
     def terminate(self):
         self._done = True
 
-    def wait(self, _timeout=None):
+    def wait(self, timeout=None):  # noqa: ARG002
         pass
 
 
