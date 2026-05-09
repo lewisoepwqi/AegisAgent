@@ -10,6 +10,7 @@ Run with:
 """
 
 import atexit
+
 import httpx
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import HTMLResponse
@@ -25,9 +26,11 @@ atexit.register(manager.stop_all)
 
 # ── Request / Response models ─────────────────────────────────────────────────
 
+
 class ChatRequest(BaseModel):
     user_id: str
     message: str
+
 
 class ChatResponse(BaseModel):
     user_id: str
@@ -35,6 +38,7 @@ class ChatResponse(BaseModel):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/", response_class=HTMLResponse)
 def index():
@@ -96,7 +100,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     try:
         port = await manager.ensure_profile(req.user_id)
     except TimeoutError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
 
     payload = {
         "model": "hermes-agent",
@@ -111,7 +115,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
             )
             resp.raise_for_status()
     except httpx.HTTPError as e:
-        raise HTTPException(status_code=502, detail=f"Profile error: {e}")
+        raise HTTPException(status_code=502, detail=f"Profile error: {e}") from e
 
     data = resp.json()
     reply = data["choices"][0]["message"]["content"]

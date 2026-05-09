@@ -24,6 +24,7 @@ app = FastAPI(title="AegisAgent Skill Vault", version="0.1.0")
 
 # ── Request models ────────────────────────────────────────────────────────────
 
+
 class SubmitRequest(BaseModel):
     name: str
     description: str
@@ -31,11 +32,13 @@ class SubmitRequest(BaseModel):
     author_id: str
     category: str = "general"
 
+
 class ReviewRequest(BaseModel):
     approver_id: str
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/", response_class=HTMLResponse)
 def index():
@@ -43,7 +46,9 @@ def index():
     skills = db.list_skills()
     rows = ""
     for s in skills:
-        badge_color = {"pending": "#f59e0b", "approved": "#10b981", "rejected": "#ef4444"}.get(s["status"], "#6b7280")
+        badge_color = {"pending": "#f59e0b", "approved": "#10b981", "rejected": "#ef4444"}.get(
+            s["status"], "#6b7280"
+        )
         rows += f"""
         <tr>
           <td>{s["name"]}</td>
@@ -95,10 +100,16 @@ def index():
 
 
 @app.post("/skills/submit-form", response_class=HTMLResponse)
-def submit_form(name: str = "", description: str = "", content: str = "",
-                author_id: str = "", category: str = "general"):
-    skill = db.submit_skill(name=name, description=description, content=content,
-                            author_id=author_id, category=category)
+def submit_form(
+    name: str = "",
+    description: str = "",
+    content: str = "",
+    author_id: str = "",
+    category: str = "general",
+):
+    skill = db.submit_skill(
+        name=name, description=description, content=content, author_id=author_id, category=category
+    )
     return f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:40px auto">
       <h3>✅ Skill submitted</h3>
@@ -116,7 +127,7 @@ def submit(req: SubmitRequest) -> dict:
     try:
         return db.submit_skill(**req.model_dump())
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.get("/skills")
@@ -136,7 +147,7 @@ def get_skill(skill_id: str) -> dict:
     try:
         return db.get_skill(skill_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Skill not found")
+        raise HTTPException(status_code=404, detail="Skill not found") from None
 
 
 @app.post("/skills/{skill_id}/approve")
@@ -145,7 +156,7 @@ def approve(skill_id: str, req: ReviewRequest) -> dict:
     try:
         return db.approve_skill(skill_id, req.approver_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Skill not found")
+        raise HTTPException(status_code=404, detail="Skill not found") from None
 
 
 @app.post("/skills/{skill_id}/reject")
@@ -154,7 +165,7 @@ def reject(skill_id: str, req: ReviewRequest) -> dict:
     try:
         return db.reject_skill(skill_id, req.approver_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Skill not found")
+        raise HTTPException(status_code=404, detail="Skill not found") from None
 
 
 @app.post("/skills/{skill_id}/use")
@@ -164,4 +175,4 @@ def record_use(skill_id: str) -> dict:
         db.increment_use(skill_id)
         return db.get_skill(skill_id)
     except KeyError:
-        raise HTTPException(status_code=404, detail="Skill not found")
+        raise HTTPException(status_code=404, detail="Skill not found") from None

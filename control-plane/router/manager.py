@@ -10,8 +10,9 @@ details.
 import os
 import subprocess
 import time
-import httpx
 from pathlib import Path
+
+import httpx
 
 # Where we store AegisAgent-managed profiles.
 # Kept inside ~/.hermes/profiles/ so Hermes's own `profile list` can see them.
@@ -27,8 +28,13 @@ DEFAULT_ENV = Path.home() / ".hermes" / ".env"
 # Only these keys are forwarded to profile subprocesses.
 # Platform tokens (WEIXIN_TOKEN etc.) are intentionally excluded to prevent
 # new profiles from trying to connect to IM platforms already in use.
-_LLM_ENV_KEYS = {"KIMI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY",
-                  "OPENROUTER_API_KEY", "ZAI_API_KEY"}
+_LLM_ENV_KEYS = {
+    "KIMI_API_KEY",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "OPENROUTER_API_KEY",
+    "ZAI_API_KEY",
+}
 
 
 def _read_llm_keys_from_dotenv() -> dict[str, str]:
@@ -45,6 +51,7 @@ def _read_llm_keys_from_dotenv() -> dict[str, str]:
         if name in _LLM_ENV_KEYS:
             keys[name] = value.strip()
     return keys
+
 
 # Minimal config.yaml written into each new profile.
 # Only sets the model + enables the api_server platform.
@@ -69,7 +76,7 @@ class ProfileManager:
     def __init__(self):
         PROFILES_ROOT.mkdir(parents=True, exist_ok=True)
         self._processes: dict[str, subprocess.Popen] = {}  # user_id → process
-        self._ports: dict[str, int] = {}                   # user_id → port
+        self._ports: dict[str, int] = {}  # user_id → port
 
     async def ensure_profile(self, user_id: str) -> int:
         """Return the api_server port for user_id, starting the process if needed."""
@@ -116,16 +123,19 @@ class ProfileManager:
         if not config_path.exists():
             org_skills_dir = PROFILES_ROOT / "org-skills"
             org_skills_dir.mkdir(parents=True, exist_ok=True)
-            config_path.write_text(_CONFIG_TEMPLATE.format(
-                port=port,
-                org_skills_dir=str(org_skills_dir),
-            ))
+            config_path.write_text(
+                _CONFIG_TEMPLATE.format(
+                    port=port,
+                    org_skills_dir=str(org_skills_dir),
+                )
+            )
 
         return profile_dir
 
     async def _wait_until_ready(self, port: int, timeout: int = 30) -> None:
         """Wait until the api_server is accepting connections or timeout."""
         import asyncio
+
         url = f"http://127.0.0.1:{port}/health"
         deadline = time.time() + timeout
         async with httpx.AsyncClient() as client:

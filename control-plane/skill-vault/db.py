@@ -7,7 +7,7 @@ The actual SKILL.md files live on disk in ORG_SKILLS_DIR.
 
 import sqlite3
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Shared directory that Hermes profiles read org skills from.
@@ -44,11 +44,13 @@ def _connect() -> sqlite3.Connection:
 
 # ── Write operations ──────────────────────────────────────────────────────────
 
-def submit_skill(name: str, description: str, content: str,
-                 author_id: str, category: str = "general") -> dict:
+
+def submit_skill(
+    name: str, description: str, content: str, author_id: str, category: str = "general"
+) -> dict:
     """Insert a new skill in 'pending' state. Returns the created row."""
     skill_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with _connect() as conn:
         conn.execute(
             """INSERT INTO skills
@@ -61,7 +63,7 @@ def submit_skill(name: str, description: str, content: str,
 
 def approve_skill(skill_id: str, approver_id: str) -> dict:
     """Approve a skill: flip status, write SKILL.md to org-skills dir."""
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with _connect() as conn:
         conn.execute(
             """UPDATE skills
@@ -91,6 +93,7 @@ def increment_use(skill_id: str) -> None:
 
 # ── Read operations ───────────────────────────────────────────────────────────
 
+
 def get_skill(skill_id: str) -> dict:
     with _connect() as conn:
         row = conn.execute("SELECT * FROM skills WHERE id=?", (skill_id,)).fetchone()
@@ -106,9 +109,7 @@ def list_skills(status: str | None = None) -> list[dict]:
                 "SELECT * FROM skills WHERE status=? ORDER BY created_at DESC", (status,)
             ).fetchall()
         else:
-            rows = conn.execute(
-                "SELECT * FROM skills ORDER BY created_at DESC"
-            ).fetchall()
+            rows = conn.execute("SELECT * FROM skills ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]
 
 
@@ -127,6 +128,7 @@ def search_skills(query: str) -> list[dict]:
 
 
 # ── Disk sync ─────────────────────────────────────────────────────────────────
+
 
 def _write_skill_file(skill: dict) -> None:
     """Write an approved skill's SKILL.md into the org-skills directory."""
