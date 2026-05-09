@@ -74,7 +74,11 @@ jobs:
           pip install -r control-plane/skill-vault/requirements.txt
 
       - name: Run mypy
-        run: mypy control-plane/ --ignore-missing-imports --no-strict-optional
+        # router 和 skill-vault 各有一个 main.py，合并检查会报同名冲突，分开跑规避该问题
+        # router and skill-vault both have main.py; running together causes a name collision, so check each separately
+        run: |
+          mypy control-plane/router/ --ignore-missing-imports --no-strict-optional
+          mypy control-plane/skill-vault/ --ignore-missing-imports --no-strict-optional
 
   # ── 单元测试 / Tests ─────────────────────────────────────────────────────────
   test:
