@@ -46,6 +46,11 @@ ignore = [
     "B008",  # FastAPI Depends() 需要在默认参数里调用函数 / FastAPI Depends() in defaults
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# feishu-gateway 目录名含连字符，不是合法 Python 包名，N999 误报
+# feishu-gateway dir name has a hyphen and is not an importable package — N999 is a false positive
+"control-plane/feishu-gateway/*" = ["N999"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["main", "manager", "db"]
 
