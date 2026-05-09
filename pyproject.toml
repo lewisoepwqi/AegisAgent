@@ -1,58 +1,69 @@
-# 项目工具统一配置入口 / Unified tool configuration for the project
+# 项目依赖与工具统一配置 / Unified project dependencies and tool configuration
 
-[tool.ruff]
-# 目标 Python 版本 / Target Python version
-target-version = "py312"
-# 单行最大字符数 / Maximum line length
-line-length = 100
-# 需要检查的目录 / Directories to check
-src = ["control-plane", "tests"]
-# 排除不需要检查的目录 / Exclude directories that don't need checking
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "*.egg-info",
+[project]
+name = "aegisagent"
+version = "0.1.0"
+description = "Multi-tenant compliance-first AI agent platform"
+requires-python = ">=3.12"
+# 运行时依赖：两个服务共用，httpx 仅 router 需要但体积小，统一管理更简单
+# Runtime deps: shared by both services; httpx is router-only but small enough to include here
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
 ]
 
+[dependency-groups]
+# 开发依赖：只在本地开发和 CI 中安装，不进入生产环境
+# Dev dependencies: installed locally and in CI only, not in production
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "mypy>=1.9.0",
+    "ruff>=0.4.10",
+    "pre-commit>=3.7.0",
+]
+
+# ── ruff 代码风格检查配置 / ruff lint and format config ───────────────────────
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["control-plane", "tests"]
+exclude = [".git", ".venv", "__pycache__", "*.egg-info"]
+
 [tool.ruff.lint]
-# 启用的规则集 / Enabled rule sets:
-#   E/W  = pycodestyle 基础规范 / basic style
-#   F    = pyflakes 逻辑错误 / logic errors
-#   I    = isort 导入排序 / import sorting
-#   UP   = pyupgrade 语法现代化 / modernize syntax
-#   B    = bugbear 常见 bug 模式 / common bug patterns
-#   N    = pep8-naming 命名规范 / naming conventions
+# E/W = pycodestyle 基础规范 / basic style
+# F   = pyflakes 逻辑错误 / logic errors
+# I   = isort 导入排序 / import sorting
+# UP  = pyupgrade 语法现代化 / modernize syntax
+# B   = bugbear 常见 bug 模式 / common bug patterns
+# N   = pep8-naming 命名规范 / naming conventions
 select = ["E", "W", "F", "I", "UP", "B", "N"]
 ignore = [
-    "E501",   # 行长由 ruff format 控制，此处不重复报错 / line length handled by formatter
-    "B008",   # FastAPI 的 Depends() 需要在默认参数里调用函数 / FastAPI Depends() calls in defaults
+    "E501",  # 行长由 ruff format 控制 / line length handled by formatter
+    "B008",  # FastAPI Depends() 需要在默认参数里调用函数 / FastAPI Depends() in defaults
 ]
 
 [tool.ruff.lint.isort]
-# 将 control-plane 子模块视为本地包 / Treat control-plane submodules as first-party
 known-first-party = ["main", "manager", "db"]
 
 [tool.ruff.format]
-# 字符串使用双引号 / Use double quotes for strings
 quote-style = "double"
 indent-style = "space"
 
 # ── mypy 类型检查配置 / mypy type check config ────────────────────────────────
+
 [tool.mypy]
 python_version = "3.12"
-# 不报告缺失的第三方库类型桩 / Don't report missing third-party type stubs
 ignore_missing_imports = true
-# 不允许 Optional 被隐式推断为 None / Disallow implicit Optional from None defaults
 no_implicit_optional = true
-# 提示未覆盖的类型 / Warn about untyped definitions
 warn_return_any = true
 
 # ── pytest 配置 / pytest config ───────────────────────────────────────────────
+
 [tool.pytest.ini_options]
-# 测试目录 / Test directories
 testpaths = ["tests"]
-# asyncio 测试自动模式 / Auto mode for asyncio tests
 asyncio_mode = "auto"
-# 简短失败摘要 / Short failure summary
 addopts = "--tb=short -q"

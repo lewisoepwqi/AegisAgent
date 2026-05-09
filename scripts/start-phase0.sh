@@ -1,42 +1,41 @@
 #!/usr/bin/env bash
 # Start AegisAgent Phase 0: Router (port 8000) + Skill Vault (port 8001)
+# 一键启动 Phase 0 的两个服务
 #
-# Usage: ./scripts/start-phase0.sh
-# Stop:  Ctrl-C  (kills both child processes)
+# Usage / 用法: ./scripts/start-phase0.sh
+# Stop / 停止:  Ctrl-C
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ROUTER_DIR="$REPO_ROOT/control-plane/router"
-VAULT_DIR="$REPO_ROOT/control-plane/skill-vault"
 LOG_DIR="/tmp/aegisagent-logs"
 
 mkdir -p "$LOG_DIR"
 
-# Install deps if venvs are missing
-for dir in "$ROUTER_DIR" "$VAULT_DIR"; do
-    if [[ ! -d "$dir/.venv" ]]; then
-        echo "[setup] Creating venv in $dir"
-        python3 -m venv "$dir/.venv"
-        "$dir/.venv/bin/pip" install -q -r "$dir/requirements.txt"
-    fi
-done
+# 确保依赖已按 uv.lock 精确安装
+# Ensure deps are installed exactly as pinned in uv.lock
+cd "$REPO_ROOT"
+uv sync --quiet
 
 echo "[start] Router    → http://127.0.0.1:8000  (log: $LOG_DIR/router.log)"
 echo "[start] SkillVault→ http://127.0.0.1:8001  (log: $LOG_DIR/skill-vault.log)"
 
-# Launch both servers in the background
-"$ROUTER_DIR/.venv/bin/uvicorn" main:app --app-dir "$ROUTER_DIR" \
+# 启动两个服务 / Launch both servers
+PYTHONPATH="$REPO_ROOT/control-plane/router" \
+  uv run uvicorn main:app \
+    --app-dir "$REPO_ROOT/control-plane/router" \
     --host 127.0.0.1 --port 8000 \
     > "$LOG_DIR/router.log" 2>&1 &
 ROUTER_PID=$!
 
-"$VAULT_DIR/.venv/bin/uvicorn" main:app --app-dir "$VAULT_DIR" \
+PYTHONPATH="$REPO_ROOT/control-plane/skill-vault" \
+  uv run uvicorn main:app \
+    --app-dir "$REPO_ROOT/control-plane/skill-vault" \
     --host 127.0.0.1 --port 8001 \
     > "$LOG_DIR/skill-vault.log" 2>&1 &
 VAULT_PID=$!
 
-# Trap Ctrl-C and kill both children
+# Ctrl-C 时同时关闭两个进程 / Kill both children on Ctrl-C
 cleanup() {
     echo ""
     echo "[stop] Shutting down..."

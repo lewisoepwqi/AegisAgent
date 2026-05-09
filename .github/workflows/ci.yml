@@ -39,21 +39,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-          cache: pip
-
-      - name: Install ruff
-        run: pip install ruff==0.4.10
 
       - name: Check formatting
         # 格式不对会打印 diff 并失败
         # Prints diff and fails if formatting differs from ruff's output
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
       - name: Check lint rules
-        run: ruff check .
+        run: uv run ruff check .
 
   # ── 类型检查 / Type check ────────────────────────────────────────────────────
   type-check:
@@ -62,23 +58,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install mypy
-          pip install -r control-plane/router/requirements.txt
-          pip install -r control-plane/skill-vault/requirements.txt
+        # uv sync 根据 uv.lock 精确安装所有依赖（含 dev 组）
+        # uv sync installs exact versions from uv.lock (including dev group)
+        run: uv sync
 
       - name: Run mypy
         # router 和 skill-vault 各有一个 main.py，合并检查会报同名冲突，分开跑规避该问题
-        # router and skill-vault both have main.py; running together causes a name collision, so check each separately
+        # router and skill-vault both have main.py; running together causes a name collision
         run: |
-          mypy control-plane/router/ --ignore-missing-imports --no-strict-optional
-          mypy control-plane/skill-vault/ --ignore-missing-imports --no-strict-optional
+          uv run mypy control-plane/router/ --ignore-missing-imports --no-strict-optional
+          uv run mypy control-plane/skill-vault/ --ignore-missing-imports --no-strict-optional
 
   # ── 单元测试 / Tests ─────────────────────────────────────────────────────────
   test:
@@ -87,20 +81,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install pytest pytest-asyncio httpx
-          pip install -r control-plane/router/requirements.txt
-          pip install -r control-plane/skill-vault/requirements.txt
+        run: uv sync
 
       - name: Run tests
         # PYTHONPATH 让 pytest 能找到 control-plane 子目录下的模块
         # PYTHONPATH lets pytest find modules inside control-plane subdirs
         env:
           PYTHONPATH: ${{ github.workspace }}/control-plane/router:${{ github.workspace }}/control-plane/skill-vault
-        run: pytest tests/ -v --tb=short
+        run: uv run pytest tests/ -v --tb=short
