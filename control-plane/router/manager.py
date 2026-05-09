@@ -59,6 +59,9 @@ platforms:
     extra:
       port: {port}
       key: ""
+skills:
+  external_dirs:
+    - {org_skills_dir}
 """
 
 
@@ -111,7 +114,12 @@ class ProfileManager:
 
         config_path = profile_dir / "config.yaml"
         if not config_path.exists():
-            config_path.write_text(_CONFIG_TEMPLATE.format(port=port))
+            org_skills_dir = PROFILES_ROOT / "org-skills"
+            org_skills_dir.mkdir(parents=True, exist_ok=True)
+            config_path.write_text(_CONFIG_TEMPLATE.format(
+                port=port,
+                org_skills_dir=str(org_skills_dir),
+            ))
 
         return profile_dir
 
