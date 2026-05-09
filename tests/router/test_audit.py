@@ -14,11 +14,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "control-plane" / "
 @pytest.fixture()
 def db(tmp_path):
     import audit
+
     return audit, tmp_path / "audit.db"
 
 
 def test_write_creates_entry(db):
-    """write() 后能查到条目 / Entry should be retrievable after write()."""
+    """write() 后能查到条目，detail 字段应反序列化为 dict。
+    Entry should be retrievable after write(); detail should deserialize to dict."""
     audit, db_path = db
     audit.write("alice", "api", "chat", detail={"x": 1}, db_path=db_path)
     rows = audit.query(db_path=db_path)
@@ -26,6 +28,7 @@ def test_write_creates_entry(db):
     assert rows[0]["user_id"] == "alice"
     assert rows[0]["action"] == "chat"
     assert rows[0]["source"] == "api"
+    assert rows[0]["detail"] == {"x": 1}
 
 
 def test_write_never_raises(db):
@@ -70,3 +73,11 @@ def test_query_limit_offset(db):
         audit.write("alice", "api", "chat", db_path=db_path)
     rows = audit.query(limit=2, offset=1, db_path=db_path)
     assert len(rows) == 2
+
+
+def test_query_returns_empty_on_bad_path(db):
+    """query() 在 DB 路径不可访问时应返回空列表而不是抛出异常。
+    query() should return empty list (not raise) when DB path is inaccessible."""
+    audit, _ = db
+    rows = audit.query(db_path=Path("/nonexistent/path/audit.db"))
+    assert rows == []

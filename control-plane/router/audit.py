@@ -46,7 +46,7 @@ def write(
         with _connect(db_path) as conn:
             conn.execute(
                 "INSERT INTO audit_log (ts, user_id, source, action, detail) VALUES (?, ?, ?, ?, ?)",
-                (now, user_id, source, action, json.dumps(detail) if detail else None),
+                (now, user_id, source, action, json.dumps(detail) if detail is not None else None),
             )
     except Exception:
         pass
@@ -64,21 +64,31 @@ def query(
     Query audit log entries, newest first."""
     clauses: list[str] = []
     params: list[object] = []
-    if user_id:
+    if user_id is not None:
         clauses.append("user_id = ?")
         params.append(user_id)
-    if action:
+    if action is not None:
         clauses.append("action = ?")
         params.append(action)
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     params.extend([limit, offset])
-    with _connect(db_path) as conn:
-        rows = conn.execute(
-            f"SELECT id, ts, user_id, source, action, detail FROM audit_log "
-            f"{where} ORDER BY id DESC LIMIT ? OFFSET ?",
-            params,
-        ).fetchall()
+    try:
+        with _connect(db_path) as conn:
+            rows = conn.execute(
+                f"SELECT id, ts, user_id, source, action, detail FROM audit_log "
+                f"{where} ORDER BY id DESC LIMIT ? OFFSET ?",
+                params,
+            ).fetchall()
+    except Exception:
+        return []
     return [
-        {"id": r[0], "ts": r[1], "user_id": r[2], "source": r[3], "action": r[4], "detail": r[5]}
+        {
+            "id": r[0],
+            "ts": r[1],
+            "user_id": r[2],
+            "source": r[3],
+            "action": r[4],
+            "detail": json.loads(r[5]) if r[5] else None,
+        }
         for r in rows
     ]
