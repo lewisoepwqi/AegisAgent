@@ -59,7 +59,7 @@ def _resolve_user(requested_user_id: str, api_key: str) -> str:
     if api_key:
         user = auth.get_by_api_key(api_key)
         if user is not None:
-            return user["user_id"]
+            return str(user["user_id"])
     raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 

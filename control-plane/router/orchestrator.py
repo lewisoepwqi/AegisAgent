@@ -134,7 +134,7 @@ class ProcessOrchestrator:
         async with lock:
             row = self._db_get(user_id)
             if row and row["status"] == "running" and row["pid"] and _pid_alive(row["pid"]):
-                return row["port"]
+                return int(row["port"])
             return await self._start(user_id, row)
 
     def touch(self, user_id: str) -> None:
