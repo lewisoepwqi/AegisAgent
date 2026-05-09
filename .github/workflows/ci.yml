@@ -1,0 +1,102 @@
+name: CI
+
+# 在所有指向 main 的 PR 以及 main 分支的直接推送上触发
+# Trigger on every PR targeting main and on direct pushes to main
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # ── PR 标题格式检查 / PR title format check ─────────────────────────────────
+  pr-title:
+    name: PR Title (Conventional Commits)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check PR title follows Conventional Commits
+        # 格式: <type>(<scope>): <subject>
+        # 允许的 type: feat fix docs refactor test chore perf ci
+        # Format: <type>(<scope>): <subject>
+        # Allowed types: feat fix docs refactor test chore perf ci
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          pattern='^(feat|fix|docs|refactor|test|chore|perf|ci)(\(.+\))?: .{1,72}$'
+          if ! echo "$title" | grep -qP "$pattern"; then
+            echo "❌ PR 标题不符合 Conventional Commits 规范 / PR title does not follow Conventional Commits"
+            echo "   当前标题 / Current title: $title"
+            echo "   正确格式 / Expected format: feat: add user auth"
+            echo "   允许的类型 / Allowed types: feat fix docs refactor test chore perf ci"
+            exit 1
+          fi
+          echo "✅ PR 标题格式正确 / PR title format is valid"
+
+  # ── 代码风格检查 / Lint ──────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff==0.4.10
+
+      - name: Check formatting
+        # 格式不对会打印 diff 并失败
+        # Prints diff and fails if formatting differs from ruff's output
+        run: ruff format --check .
+
+      - name: Check lint rules
+        run: ruff check .
+
+  # ── 类型检查 / Type check ────────────────────────────────────────────────────
+  type-check:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install mypy
+          pip install -r control-plane/router/requirements.txt
+          pip install -r control-plane/skill-vault/requirements.txt
+
+      - name: Run mypy
+        run: mypy control-plane/ --ignore-missing-imports --no-strict-optional
+
+  # ── 单元测试 / Tests ─────────────────────────────────────────────────────────
+  test:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio httpx
+          pip install -r control-plane/router/requirements.txt
+          pip install -r control-plane/skill-vault/requirements.txt
+
+      - name: Run tests
+        # PYTHONPATH 让 pytest 能找到 control-plane 子目录下的模块
+        # PYTHONPATH lets pytest find modules inside control-plane subdirs
+        env:
+          PYTHONPATH: ${{ github.workspace }}/control-plane/router:${{ github.workspace }}/control-plane/skill-vault
+        run: pytest tests/ -v --tb=short

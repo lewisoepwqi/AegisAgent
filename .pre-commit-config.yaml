@@ -1,0 +1,50 @@
+# pre-commit 本地钩子配置
+# Local pre-commit hooks configuration
+#
+# 安装 / Install:
+#   pip install pre-commit
+#   pre-commit install          # 安装 commit 钩子 / install commit hook
+#   pre-commit install --hook-type commit-msg  # 安装 commit 消息钩子 / install commit-msg hook
+#
+# 手动对全部文件运行 / Run manually on all files:
+#   pre-commit run --all-files
+
+repos:
+  # 通用文件检查 / General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace       # 删除行尾空格 / Remove trailing whitespace
+      - id: end-of-file-fixer         # 确保文件以换行符结尾 / Ensure files end with newline
+      - id: check-yaml                # 验证 YAML 语法 / Validate YAML syntax
+      - id: check-toml                # 验证 TOML 语法 / Validate TOML syntax
+      - id: check-added-large-files   # 阻止提交大文件 / Block large file commits
+        args: [--maxkb=500]
+      - id: mixed-line-ending         # 统一换行符为 LF / Normalize line endings to LF
+        args: [--fix=lf]
+      - id: check-merge-conflict      # 拦截未解决的合并冲突标记 / Block unresolved merge conflict markers
+
+  # Python 代码格式化与 lint / Python formatting and lint
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10
+    hooks:
+      - id: ruff          # lint，自动修复可修复的问题 / lint, auto-fix fixable issues
+        args: [--fix]
+      - id: ruff-format   # 格式化，等同于 black / format, equivalent to black
+
+  # Commit 消息格式检查（Conventional Commits）
+  # Commit message format check (Conventional Commits)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - refactor
+          - test
+          - chore
+          - perf
+          - ci

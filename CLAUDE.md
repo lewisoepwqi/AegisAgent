@@ -4,34 +4,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-AegisAgent is in **design phase** — no source code exists yet. The repo currently contains only specification documents and empty directory placeholders (`.gitkeep`). When implementing Phase 0 MVP, follow the planned stack in @README.md and the build sequence in @docs/ROADMAP.md.
+AegisAgent Phase 0 MVP is **complete and running**. The control plane has two live services:
 
-Authoritative specs (read these before proposing architectural changes):
+| Service | Directory | Port |
+|---------|-----------|------|
+| Router | `control-plane/router/` | 8000 |
+| Skill Vault | `control-plane/skill-vault/` | 8001 |
+
+Start both with: `./scripts/start-phase0.sh`
+
+Authoritative specs:
 - @docs/PROPOSAL.md — full product & technical proposal
 - @docs/ROADMAP.md — phased implementation plan (Phase 0 → 3)
+- @docs/CONTRIBUTING.md — **development standards (read before writing any code)**
 
 ## Repository layout
 
-- `docs/` — all design docs live here (`PROPOSAL.md`, `ROADMAP.md`, `SETUP-GUIDE.md`), **not** at the repo root.
-- `control-plane/`, `compliance/`, `hermes-patches/`, `examples/`, `scripts/` — empty placeholders for Phase 0+ code. Each holds a `.gitkeep`.
+```
+AegisAgent/
+├── control-plane/
+│   ├── router/          # Phase 0: per-user Hermes profile routing (FastAPI, port 8000)
+│   └── skill-vault/     # Phase 0: org skill submission & approval (FastAPI, port 8001)
+├── tests/
+│   ├── router/          # Router unit tests
+│   └── skill_vault/     # Skill Vault unit tests
+├── scripts/
+│   └── start-phase0.sh  # One-command startup
+├── docs/                # All design docs + CONTRIBUTING
+├── compliance/          # Phase 2+ placeholder
+├── hermes-patches/      # Numbered patches against upstream Hermes
+└── examples/            # Reference deployments
+```
 
-## Conventions
+## Development standards
 
-- **Documentation is bilingual (EN + 中文).** Any new doc — module README, architecture note, ADR — must include both languages, matching the style of the top-level README.md. Keep section structure parallel between the two language blocks.
-- **Commits follow Conventional Commits**: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`, `ci:`. Match the style of the initial `docs:` commit.
-- **PR target branch is `main`** (not `master`).
-- **ADRs** go in `docs/adr/` as `NNNN-title.md` (use `/new-adr` skill to scaffold).
+**Full spec: @docs/CONTRIBUTING.md** — read it before writing code.
+
+Quick reference:
+- **Comments**: bilingual, Chinese first then English on the next line, no blank line between
+- **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`, `ci:`)
+- **PRs**: Squash and Merge to main; needs 1 reviewer + all CI checks green
+- **Lint/format**: `ruff format . && ruff check --fix .` (config in `pyproject.toml`)
+- **Tests**: `pytest tests/ -v`; new business logic must have ≥ 80% coverage
+- **Docs**: all `.md` files must be bilingual (EN + 中文), parallel structure
+
+## Tech stack (Phase 0)
+
+- Backend: Python 3.12 + FastAPI + uvicorn
+- Storage: SQLite (Skill Vault metadata via `skill-vault/db.py`)
+- IPC: Hermes `api_server` platform (OpenAI-compatible HTTP, ports 19100+)
+- Profile isolation: `HERMES_HOME` environment variable per user
 
 ## Background
 
-AegisAgent is built on top of [Hermes Agent](https://github.com/NousResearch/hermes-agent) (MIT, Nous Research). Patches against upstream Hermes go in `hermes-patches/` as numbered `.patch` files with a clear note on whether they've been upstreamed. Do not vendor the Hermes source into this repo — keep it as patches plus integration glue.
+AegisAgent is built on top of [Hermes Agent](https://github.com/NousResearch/hermes-agent) (MIT, Nous Research). Patches against upstream Hermes go in `hermes-patches/` as numbered `.patch` files with a clear note on whether they've been upstreamed. Do not vendor the Hermes source — keep it as patches plus integration glue.
 
-## When code arrives (Phase 0+)
+## ADRs
 
-Planned stack per README.md:
-- Backend: Python (FastAPI) + Go for performance-critical paths
-- Frontend: React + TypeScript
-- DB: PostgreSQL (control plane) + SQLite (per-profile, Hermes default)
-- Orchestration: PM2 → Kubernetes
-
-Once a language lands, add a `.claude/rules/<topic>.md` file (e.g., `python-style.md`, `go-testing.md`) rather than growing this file.
+Go in `docs/adr/` as `NNNN-title.md`. Use `/new-adr` skill to scaffold.
