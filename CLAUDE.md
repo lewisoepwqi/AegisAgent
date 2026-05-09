@@ -10,8 +10,9 @@ AegisAgent Phase 0 MVP is **complete and running**. The control plane has two li
 |---------|-----------|------|
 | Router | `control-plane/router/` | 8000 |
 | Skill Vault | `control-plane/skill-vault/` | 8001 |
+| Feishu Gateway | `control-plane/feishu-gateway/` | 8002 |
 
-Start both with: `./scripts/start-phase0.sh`
+Start all with: `./scripts/start-phase1.sh`
 
 Authoritative specs:
 - @docs/PROPOSAL.md — full product & technical proposal
@@ -49,12 +50,17 @@ Quick reference:
 - **Tests**: `PYTHONPATH=control-plane/router:control-plane/skill-vault uv run pytest tests/ -v`; new business logic must have ≥ 80% coverage
 - **Docs**: all `.md` files must be bilingual (EN + 中文), parallel structure
 
-## Tech stack (Phase 0)
+## Tech stack (Phase 1)
 
 - Backend: Python 3.12 + FastAPI + uvicorn
 - Storage: SQLite (Skill Vault metadata via `skill-vault/db.py`)
 - IPC: Hermes `api_server` platform (OpenAI-compatible HTTP, ports 19100+)
 - Profile isolation: `HERMES_HOME` environment variable per user
+- Auth: SQLite (`~/.hermes/profiles/aegis/auth.db`) — API Key per user
+- Audit: SQLite (`~/.hermes/profiles/aegis/audit.db`) — tamper-evident event log
+- Process state: SQLite (`~/.hermes/profiles/aegis/orchestrator.db`) — survives Router restart
+- IM: Feishu Open Platform (self-built app with event subscription)
+- Local testing: ngrok to expose port 8002 for Feishu webhook
 
 ## Background
 
