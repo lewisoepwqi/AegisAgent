@@ -229,19 +229,31 @@ tests/
 git clone git@github.com:lewisoepwqi/AegisAgent.git
 cd AegisAgent
 
+# 安装 uv（首次）/ Install uv (first time only)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 安装所有依赖（精确版本来自 uv.lock）/ Install all deps (exact versions from uv.lock)
+uv sync
+
 # 安装 pre-commit 钩子 / Install pre-commit hooks
-pip install pre-commit
-pre-commit install
-pre-commit install --hook-type commit-msg
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
 
 # 启动 Phase 0 服务 / Start Phase 0 services
 ./scripts/start-phase0.sh
 
 # 运行测试 / Run tests
-pip install pytest pytest-asyncio httpx
-pip install -r control-plane/router/requirements.txt
-pip install -r control-plane/skill-vault/requirements.txt
-pytest tests/ -v
+PYTHONPATH=control-plane/router:control-plane/skill-vault uv run pytest tests/ -v
+```
+
+**依赖管理日常操作：**
+
+```bash
+# 新增依赖后更新锁文件 / After adding a dep to pyproject.toml, update the lock
+uv lock
+
+# 同步到最新锁文件 / Sync to latest lock file
+uv sync
 ```
 
 ---
@@ -357,6 +369,32 @@ Every PR triggers four checks automatically. All must pass before merging:
 | Check | What it does | Fix |
 |-------|-------------|-----|
 | **PR Title** | Validates Conventional Commits format | Edit the PR title |
-| **Lint** | `ruff format --check` + `ruff check` | Run `ruff format . && ruff check --fix .` locally |
+| **Lint** | `ruff format --check` + `ruff check` | Run `uv run ruff format . && uv run ruff check --fix .` locally |
 | **Type Check** | `mypy` static analysis | Add missing type annotations |
 | **Tests** | `pytest tests/` | Fix failing tests |
+
+### 8. Local Setup
+
+```bash
+# Install uv (first time only)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install all dependencies (exact versions from uv.lock)
+uv sync
+
+# Install pre-commit hooks
+uv run pre-commit install
+uv run pre-commit install --hook-type commit-msg
+
+# Start services
+./scripts/start-phase0.sh
+
+# Run tests
+PYTHONPATH=control-plane/router:control-plane/skill-vault uv run pytest tests/ -v
+```
+
+**Dependency management:**
+```bash
+# After adding a dep to pyproject.toml
+uv lock && uv sync
+```

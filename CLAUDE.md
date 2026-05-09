@@ -44,8 +44,9 @@ Quick reference:
 - **Comments**: bilingual, Chinese first then English on the next line, no blank line between
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`, `ci:`)
 - **PRs**: Squash and Merge to main; needs 1 reviewer + all CI checks green
-- **Lint/format**: `ruff format . && ruff check --fix .` (config in `pyproject.toml`)
-- **Tests**: `pytest tests/ -v`; new business logic must have ≥ 80% coverage
+- **Deps**: `uv sync` installs exact versions from `uv.lock`; `uv lock` updates the lock after editing `pyproject.toml`
+- **Lint/format**: `uv run ruff format . && uv run ruff check --fix .` (config in `pyproject.toml`)
+- **Tests**: `PYTHONPATH=control-plane/router:control-plane/skill-vault uv run pytest tests/ -v`; new business logic must have ≥ 80% coverage
 - **Docs**: all `.md` files must be bilingual (EN + 中文), parallel structure
 
 ## Tech stack (Phase 0)
