@@ -30,7 +30,7 @@ def test_write_creates_entry(db):
 
 def test_write_never_raises(db):
     """write() 不应抛出任何异常 / write() must never raise."""
-    audit, db_path = db
+    audit, _db_path = db
     audit.write("x", "api", "chat", db_path=Path("/nonexistent/path/audit.db"))
 
 
@@ -66,7 +66,7 @@ def test_query_newest_first(db):
 def test_query_limit_offset(db):
     """limit/offset 应正确分页 / limit/offset should paginate correctly."""
     audit, db_path = db
-    for i in range(5):
+    for _ in range(5):
         audit.write("alice", "api", "chat", db_path=db_path)
     rows = audit.query(limit=2, offset=1, db_path=db_path)
     assert len(rows) == 2
