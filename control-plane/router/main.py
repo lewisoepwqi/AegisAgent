@@ -11,6 +11,7 @@ Phase 0 → Phase 1 changes:
 """
 
 import asyncio
+import html
 import os
 from contextlib import asynccontextmanager
 
@@ -124,11 +125,11 @@ async def chat_form(
     <head><title>AegisAgent Router</title></head>
     <body style="font-family:sans-serif;max-width:600px;margin:40px auto">
         <h2>🛡️ AegisAgent Router</h2>
-        <p><strong>User:</strong> {result.user_id}</p>
-        <p><strong>Message:</strong> {message}</p>
+        <p><strong>User:</strong> {html.escape(result.user_id)}</p>
+        <p><strong>Message:</strong> {html.escape(message)}</p>
         <hr>
         <p><strong>Reply:</strong></p>
-        <pre style="background:#f4f4f4;padding:12px;border-radius:6px;white-space:pre-wrap">{result.reply}</pre>
+        <pre style="background:#f4f4f4;padding:12px;border-radius:6px;white-space:pre-wrap">{html.escape(result.reply)}</pre>
         <a href="/">← Back</a>
     </body>
     </html>
@@ -176,12 +177,14 @@ def status():
 
 @app.get("/internal/user-by-feishu/{openid}")
 def internal_user_by_feishu(openid: str) -> dict:
-    """供飞书 Gateway 查询 open_id 对应的用户。仅限内网调用。
-    For Feishu Gateway to look up a user by open_id. Internal use only."""
+    """供飞书 Gateway 查询 open_id 对应的用户。仅限内网调用，不返回 api_key。
+    For Feishu Gateway to look up a user by open_id. Internal use only; api_key excluded."""
     user = auth.get_by_feishu_openid(openid)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    # 不向 Gateway 暴露 api_key，其只需要 user_id
+    # Don't expose api_key to the Gateway; it only needs user_id
+    return {k: v for k, v in user.items() if k != "api_key"}
 
 
 # ── Admin endpoints ───────────────────────────────────────────────────────────

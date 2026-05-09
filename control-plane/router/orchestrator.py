@@ -211,7 +211,8 @@ class ProcessOrchestrator:
         async with httpx.AsyncClient() as client:
             while time.time() < deadline:
                 try:
-                    await client.get(url, timeout=1.0)
+                    resp = await client.get(url, timeout=1.0)
+                    resp.raise_for_status()
                     return
                 except Exception:
                     await asyncio.sleep(0.5)
