@@ -17,29 +17,26 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "control-plane" / "
 
 
 @pytest.fixture()
-def tmp_db(tmp_path, monkeypatch):
+def tmp_db(tmp_path):
     """
     每个测试用例获得独立的临时数据库和 org-skills 目录。
     Each test case gets its own temporary database and org-skills directory.
     """
-    # 重定向数据库路径和技能输出目录 / Redirect DB path and skill output directory
-    monkeypatch.setenv("HOME", str(tmp_path))
-
-    # 需要在修改环境后重新导入模块以应用新路径
-    # Re-import the module after patching env so new paths take effect
     import importlib
 
-    import db
+    import db  # type: ignore[import]
 
+    # 直接覆盖模块级路径常量，指向临时目录
+    # Override module-level path constants to point at a temp directory
+    db.DB_PATH = tmp_path / "skill-vault.db"
+    db.ORG_SKILLS_DIR = tmp_path / "org-skills"
+
+    # 重新导入让建表语句使用新路径
+    # Reload so _connect() picks up the new DB_PATH
     importlib.reload(db)
+    db.DB_PATH = tmp_path / "skill-vault.db"
+    db.ORG_SKILLS_DIR = tmp_path / "org-skills"
 
-    # 重置全局路径常量 / Reset global path constants to point at tmp_path
-    db.DB_PATH = tmp_path / ".hermes" / "profiles" / "aegis" / "skill-vault.db"
-    db.ORG_SKILLS_DIR = tmp_path / ".hermes" / "profiles" / "aegis" / "org-skills"
-    db.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-    # 重置连接缓存，确保使用新路径 / Reset connection cache so new path is used
-    db._init_db()
     return db
 
 
