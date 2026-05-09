@@ -34,9 +34,8 @@ process via its built-in `api_server` platform (OpenAI-compatible HTTP).
 **Manual start**
 
 ```bash
-cd control-plane/router
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/uvicorn main:app --reload --port 8000
+# From repo root
+PYTHONPATH=control-plane/router uv run uvicorn main:app --app-dir control-plane/router --reload --port 8000
 ```
 
 ## Skill Vault (`skill-vault/`)
@@ -65,9 +64,8 @@ automatically.
 **Manual start**
 
 ```bash
-cd control-plane/skill-vault
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/uvicorn main:app --reload --port 8001
+# From repo root
+PYTHONPATH=control-plane/skill-vault uv run uvicorn main:app --app-dir control-plane/skill-vault --reload --port 8001
 ```
 
 ## 快速说明（中文）

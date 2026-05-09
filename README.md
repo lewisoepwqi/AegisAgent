@@ -96,8 +96,8 @@ AegisAgent adds three layers on top of Hermes Agent:
 
 | Phase | Scope | Timeline | Status |
 |-------|-------|----------|--------|
-| **Phase 0: MVP** | Single-user fork, gateway routing patch, skill vault prototype | 8 weeks | 🟡 Planning |
-| **Phase 1: Team-scale** | 5–10 users, SSO, real IM integration, audit MVP | 2–4 months | ⚪ Not started |
+| **Phase 0: MVP** | Single-user routing, per-user Hermes profile isolation, org skill vault | 8 weeks | ✅ Complete |
+| **Phase 1: Team-scale** | 5–10 users, SSO, process orchestrator, WeCom gateway, audit MVP | 2–4 months | 🟡 In progress |
 | **Phase 2: Compliance** | 50+ users, full middleware, encryption client adapters | 4–8 months | ⚪ Not started |
 | **Phase 3: Productization** | Industry templates, deployment packages, customer delivery | 8–12 months | ⚪ Not started |
 
@@ -223,8 +223,8 @@ AegisAgent 在 Hermes Agent 之上叠加三层能力:
 
 | 阶段 | 范围 | 时间 | 状态 |
 |------|------|------|------|
-| **Phase 0: MVP** | 单用户 Fork、网关路由 patch、Skill 仓雏形 | 8 周 | 🟡 规划中 |
-| **Phase 1: 团队级** | 5–10 用户、SSO、真实 IM 集成、审计 MVP | 2–4 月 | ⚪ 未开始 |
+| **Phase 0: MVP** | 单用户路由、per-user Hermes profile 隔离、组织 Skill 仓 | 8 周 | ✅ 已完成 |
+| **Phase 1: 团队级** | 5–10 用户、SSO、进程编排器、企微网关、审计 MVP | 2–4 月 | 🟡 进行中 |
 | **Phase 2: 合规** | 50+ 用户、完整中间层、加密客户端适配 | 4–8 月 | ⚪ 未开始 |
 | **Phase 3: 产品化** | 行业模板、部署包、对客交付 | 8–12 月 | ⚪ 未开始 |
 
