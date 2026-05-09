@@ -22,7 +22,7 @@ class _FakeProc:
     def terminate(self):
         self._done = True
 
-    def wait(self, timeout=None):  # noqa: ARG002
+    def wait(self, _timeout=None):
         pass
 
 
@@ -35,9 +35,9 @@ def orch(monkeypatch, tmp_path):
     monkeypatch.setattr(m, "DB_PATH", tmp_path / "orch.db")
 
     fake = _FakeProc()
-    monkeypatch.setattr("subprocess.Popen", lambda *_a, **_kw: fake)
+    monkeypatch.setattr("subprocess.Popen", lambda *_, **__: fake)
 
-    async def _ready(_self, _port, timeout=30):  # noqa: ARG001
+    async def _ready(_self, _port, _timeout=30):  # noqa: ARG001
         pass
 
     monkeypatch.setattr(m.ProcessOrchestrator, "_wait_until_ready", _ready)
@@ -112,9 +112,9 @@ async def test_profile_dir_and_config_created(monkeypatch, tmp_path):
 
     monkeypatch.setattr(m, "PROFILES_ROOT", tmp_path / "profiles")
     monkeypatch.setattr(m, "DEFAULT_ENV", tmp_path / ".env")
-    monkeypatch.setattr("subprocess.Popen", lambda *_a, **_kw: _FakeProc())
+    monkeypatch.setattr("subprocess.Popen", lambda *_, **__: _FakeProc())
 
-    async def _ready(_self, _port, timeout=30):  # noqa: ARG001
+    async def _ready(_self, _port, _timeout=30):  # noqa: ARG001
         pass
 
     monkeypatch.setattr(m.ProcessOrchestrator, "_wait_until_ready", _ready)
