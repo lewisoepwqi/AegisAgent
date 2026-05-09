@@ -30,7 +30,7 @@ def test_write_creates_entry(db):
 
 def test_write_never_raises(db):
     """write() 不应抛出任何异常 / write() must never raise."""
-    audit, _db_path = db
+    audit, _ = db
     audit.write("x", "api", "chat", db_path=Path("/nonexistent/path/audit.db"))
 
 
